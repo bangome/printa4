@@ -24,6 +24,8 @@
   "rewrites": [
     { "source": "/installed", "destination": "/api/installed" },
     { "source": "/uninstalled", "destination": "/api/uninstalled" },
+    { "source": "/api/page/:pageId", "destination": "/api/page/:pageId" },
+    { "source": "/api/page/:pageId/html", "destination": "/api/page/:pageId/html" },
     { "source": "/((?!atlassian-connect.json).*)", "destination": "/index.html" }
   ]
 } 

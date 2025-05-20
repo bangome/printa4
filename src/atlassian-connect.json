@@ -8,8 +8,12 @@
   },
   "baseUrl": "https://printa4.vercel.app",
   "authentication": {
-    "type": "none"
+    "type": "jwt"
   },
+  "scopes": [
+    "read",
+    "write"
+  ],
   "modules": {
     "generalPages": [
       {
