@@ -42,7 +42,7 @@
     "webpack-dev-server": "^4.11.1"
   },
   "engines": {
-    "node": "20.x"
+    "node": "18.x"
   },
   "author": "",
   "license": "MIT"

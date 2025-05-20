@@ -1,7 +1,7 @@
 {
   "version": 2,
   "outputDirectory": "public",
-  "buildCommand": "npm run build",
+  "buildCommand": "npx webpack --mode production",
   "installCommand": "npm install",
   "framework": null,
   "headers": [
