@@ -1,0 +1,53 @@
+{
+  "key": "printa4",
+  "name": "A4 PDF Export for Confluence",
+  "description": "Confluence 페이지를 A4 용지 크기에 최적화하여 PDF로 내보내는 앱",
+  "vendor": {
+    "name": "Your Company",
+    "url": "https://example.com"
+  },
+  "baseUrl": "{{localBaseUrl}}",
+  "authentication": {
+    "type": "jwt"
+  },
+  "lifecycle": {
+    "installed": "/installed"
+  },
+  "scopes": [
+    "read",
+    "write"
+  ],
+  "modules": {
+    "generalPages": [
+      {
+        "key": "pdf-export-page",
+        "location": "system.content.action",
+        "name": {
+          "value": "A4 PDF 내보내기"
+        },
+        "url": "/pdf-export?pageId={page.id}",
+        "conditions": [
+          {
+            "condition": "content_type",
+            "params": {
+              "contentTypes": ["page"]
+            }
+          }
+        ]
+      }
+    ],
+    "webItems": [
+      {
+        "key": "pdf-export-button",
+        "location": "confluence.page.tools",
+        "name": {
+          "value": "A4 PDF 내보내기"
+        },
+        "url": "/pdf-export?pageId={page.id}",
+        "tooltip": {
+          "value": "A4 용지 크기로 PDF 내보내기"
+        }
+      }
+    ]
+  }
+} 

@@ -1,0 +1,8 @@
+<atlassian-plugin key="com.your.company.pdf-export" name="A4 PDF Export">
+    <plugin-info>
+        <description>A4 PDF Export for Confluence</description>
+        <version>1.0.0</version>
+        <vendor name="Aravoca" url="https://www.aravoca.com"/>
+    </plugin-info>
+    <!-- 앱 설정 -->
+</atlassian-plugin.xml> 

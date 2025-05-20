@@ -1,0 +1,178 @@
+import React, { useState, useEffect } from 'react';
+import { css } from '@emotion/react';
+import Header from './components/Header';
+import PdfPreview from './components/PdfPreview';
+import SettingsPanel from './components/SettingsPanel';
+import confluenceApi from './api/confluence';
+
+// 기본 PDF 설정
+const defaultSettings = {
+  margin: {
+    top: 20,
+    right: 20,
+    bottom: 20,
+    left: 20
+  },
+  fontSize: {
+    title: 18,
+    heading1: 16,
+    heading2: 14,
+    body: 12
+  },
+  fontFamily: 'Arial',
+  header: {
+    show: true,
+    text: '',
+    align: 'center'
+  },
+  footer: {
+    show: true,
+    text: '',
+    showPageNumber: true,
+    align: 'center'
+  }
+};
+
+const App = () => {
+  const [pageId, setPageId] = useState(null);
+  const [pageTitle, setPageTitle] = useState('');
+  const [pageContent, setPageContent] = useState('');
+  const [settings, setSettings] = useState(defaultSettings);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // URL에서 pageId 파라미터 가져오기
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pageIdParam = params.get('pageId');
+    if (pageIdParam) {
+      setPageId(pageIdParam);
+    } else {
+      setError('페이지 ID가 제공되지 않았습니다.');
+    }
+  }, []);
+
+  // 페이지 콘텐츠 가져오기
+  useEffect(() => {
+    if (!pageId) return;
+
+    const fetchPageContent = async () => {
+      try {
+        setLoading(true);
+        const pageData = await confluenceApi.getPageContent(pageId);
+        const htmlContent = await confluenceApi.getPageHtmlContent(pageId);
+        
+        setPageTitle(pageData.title);
+        setPageContent(htmlContent);
+        
+        // 헤더/푸터 기본값 설정
+        setSettings(prev => ({
+          ...prev,
+          header: {
+            ...prev.header,
+            text: pageData.title
+          },
+          footer: {
+            ...prev.footer,
+            text: `Generated from Confluence - ${new Date().toLocaleDateString()}`
+          }
+        }));
+      } catch (err) {
+        console.error('페이지 콘텐츠 가져오기 오류:', err);
+        setError('페이지 콘텐츠를 가져오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPageContent();
+  }, [pageId]);
+
+  // 설정 변경 핸들러
+  const handleSettingsChange = (newSettings) => {
+    setSettings({
+      ...settings,
+      ...newSettings
+    });
+  };
+
+  return (
+    <div css={appStyles}>
+      <Header title="A4 PDF Export" />
+      
+      {error && (
+        <div css={errorStyles}>
+          {error}
+        </div>
+      )}
+      
+      {loading ? (
+        <div css={loadingStyles}>
+          콘텐츠를 불러오는 중...
+        </div>
+      ) : (
+        <div css={contentStyles}>
+          <div css={previewContainerStyles}>
+            <PdfPreview
+              title={pageTitle}
+              content={pageContent}
+              settings={settings}
+            />
+          </div>
+          <div css={settingsPanelStyles}>
+            <SettingsPanel
+              settings={settings}
+              onSettingsChange={handleSettingsChange}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// 스타일
+const appStyles = css`
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+`;
+
+const contentStyles = css`
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+`;
+
+const previewContainerStyles = css`
+  flex: 1;
+  padding: 20px;
+  overflow: auto;
+  background-color: #f4f5f7;
+`;
+
+const settingsPanelStyles = css`
+  width: 300px;
+  background-color: #ffffff;
+  border-left: 1px solid #dfe1e6;
+  overflow-y: auto;
+`;
+
+const loadingStyles = css`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+  font-size: 16px;
+`;
+
+const errorStyles = css`
+  padding: 16px;
+  background-color: #ffebe6;
+  color: #de350b;
+  border-radius: 3px;
+  margin: 16px;
+`;
+
+export default App; 
