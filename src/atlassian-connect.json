@@ -10,6 +10,10 @@
   "authentication": {
     "type": "jwt"
   },
+  "lifecycle": {
+    "installed": "/installed",
+    "uninstalled": "/uninstalled"
+  },
   "scopes": [
     "read",
     "write"
