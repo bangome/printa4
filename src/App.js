@@ -19,7 +19,7 @@ const defaultSettings = {
     heading2: 14,
     body: 12
   },
-  fontFamily: 'Arial',
+  fontFamily: "'Noto Sans KR', sans-serif",
   header: {
     show: true,
     text: '',
@@ -136,7 +136,7 @@ const appStyles = css`
   display: flex;
   flex-direction: column;
   height: 100vh;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 `;
 
 const contentStyles = css`

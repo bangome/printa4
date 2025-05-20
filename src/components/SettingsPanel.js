@@ -129,6 +129,7 @@ const SettingsPanel = ({ settings, onSettingsChange }) => {
             <option value="Georgia">Georgia</option>
             <option value="Verdana">Verdana</option>
             <option value="Helvetica">Helvetica</option>
+            <option value="'Noto Sans KR', sans-serif">Noto Sans KR</option>
           </select>
         </div>
       </section>
