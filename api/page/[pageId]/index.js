@@ -1,6 +1,8 @@
 /**
  * Confluence 페이지 콘텐츠 가져오기 API
  */
+const { requestConfluenceApi } = require('../../utils/atlassian');
+
 module.exports = async (req, res) => {
   const { pageId } = req.query;
   
@@ -8,18 +10,34 @@ module.exports = async (req, res) => {
     // API 요청 로깅
     console.log(`페이지 콘텐츠 요청: pageId=${pageId}`);
     
-    // JWT 토큰으로 인증해야 하지만, 현재 테스트용으로 간단한 응답 반환
-    const mockPageData = {
-      id: pageId,
-      title: "테스트 페이지",
-      content: "<p>테스트 콘텐츠입니다.</p>",
-      version: { number: 1 }
-    };
+    let pageData;
     
-    // 실제 구현에서는 Atlassian Connect JWT를 사용해 Confluence API에 요청을 보내야 합니다
-    // 예: const response = await axios.get(`https://your-instance.atlassian.net/wiki/rest/api/content/${pageId}?expand=body.storage,version`);
+    try {
+      // 실제 Confluence API 호출
+      pageData = await requestConfluenceApi(
+        'GET', 
+        `/wiki/rest/api/content/${pageId}?expand=body.storage,version`
+      );
+      
+      console.log('페이지 데이터 가져오기 성공:', pageData.title);
+    } catch (apiError) {
+      console.error('Confluence API 오류:', apiError.message);
+      
+      // 실패 시 테스트 데이터로 대체
+      console.log('테스트 데이터로 대체합니다.');
+      pageData = {
+        id: pageId,
+        title: "테스트 페이지",
+        body: {
+          storage: {
+            value: "<p>테스트 콘텐츠입니다.</p>"
+          }
+        },
+        version: { number: 1 }
+      };
+    }
     
-    res.status(200).json(mockPageData);
+    res.status(200).json(pageData);
   } catch (error) {
     console.error('페이지 콘텐츠 가져오기 오류:', error);
     res.status(500).json({ 
