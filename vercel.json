@@ -14,17 +14,8 @@
       ]
     }
   ],
-  "routes": [
-    {
-      "src": "/atlassian-connect.json",
-      "dest": "/atlassian-connect.json"
-    },
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+  "rewrites": [
+    { "source": "/atlassian-connect.json", "destination": "/atlassian-connect.json" },
+    { "source": "/(.*)", "destination": "/index.html" }
   ]
 } 
