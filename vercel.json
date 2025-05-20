@@ -15,7 +15,6 @@
     }
   ],
   "rewrites": [
-    { "source": "/atlassian-connect.json", "destination": "/atlassian-connect.json" },
-    { "source": "/(.*)", "destination": "/index.html" }
+    { "source": "/((?!atlassian-connect.json).*)", "destination": "/index.html" }
   ]
 } 
