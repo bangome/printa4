@@ -3,6 +3,7 @@ const TerserPlugin = require('terser-webpack-plugin');
 const CompressionPlugin = require('compression-webpack-plugin');
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   mode: 'production',
@@ -88,6 +89,11 @@ module.exports = {
         minifyCSS: true,
         minifyURLs: true
       }
+    }),
+    new CopyPlugin({
+      patterns: [
+        { from: 'src/atlassian-connect.json', to: 'atlassian-connect.json' }
+      ],
     }),
     new CompressionPlugin({
       test: /\.(js|css|html|svg)$/,
