@@ -1,0 +1,28 @@
+{
+  "key": "com.yourcompany.a4-pdf-export",
+  "name": "A4 PDF Export",
+  "description": "Confluence 페이지를 A4 크기에 최적화된 PDF로 변환",
+  "vendor": {
+    "name": "Your Company",
+    "url": "https://yourcompany.com"
+  },
+  "baseUrl": "https://printa4-3gk2htve5-jinhwa-aegisepcoms-projects.vercel.app",
+  "authentication": {
+    "type": "none"
+  },
+  "lifecycle": {
+    "installed": "/installed"
+  },
+  "modules": {
+    "generalPages": [
+      {
+        "key": "a4-pdf-exporter-page",
+        "location": "system.content.action",
+        "name": {
+          "value": "A4 PDF로 내보내기"
+        },
+        "url": "/?pageId={page.id}"
+      }
+    ]
+  }
+} 
