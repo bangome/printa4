@@ -22,6 +22,8 @@
     }
   ],
   "rewrites": [
+    { "source": "/installed", "destination": "/api/installed" },
+    { "source": "/uninstalled", "destination": "/api/uninstalled" },
     { "source": "/((?!atlassian-connect.json).*)", "destination": "/index.html" }
   ]
 } 
