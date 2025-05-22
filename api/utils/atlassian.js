@@ -3,56 +3,38 @@
  */
 const axios = require('axios');
 const jwt = require('atlassian-jwt');
-const fs = require('fs').promises;
-const path = require('path');
+
+// 설치 데이터를 메모리에 저장하기 위한 변수
+let cachedInstallData = null;
 
 /**
- * 최신 설치 데이터 불러오기
- * @returns {Promise<Object|null>} - 설치 데이터 객체
+ * 설치 데이터 저장
+ * @param {Object} data - 설치 데이터
  */
-async function loadInstallationData() {
-  try {
-    const installDataDir = path.join('/tmp', 'install-data');
-    
-    try {
-      const files = await fs.readdir(installDataDir);
-      if (!files || files.length === 0) {
-        console.warn('설치 데이터 파일이 없습니다.');
-        return null;
-      }
-      
-      // 가장 최신 파일 찾기
-      let latestFile = null;
-      let latestTime = 0;
-      
-      for (const file of files) {
-        if (!file.endsWith('.json')) continue;
-        
-        const filePath = path.join(installDataDir, file);
-        const stats = await fs.stat(filePath);
-        
-        if (stats.mtimeMs > latestTime) {
-          latestTime = stats.mtimeMs;
-          latestFile = filePath;
-        }
-      }
-      
-      if (!latestFile) {
-        console.warn('유효한 설치 데이터 파일이 없습니다.');
-        return null;
-      }
-      
-      // 파일 읽기
-      const data = await fs.readFile(latestFile, 'utf8');
-      return JSON.parse(data);
-    } catch (err) {
-      console.error('설치 데이터 디렉토리 읽기 오류:', err.message);
-      return null;
-    }
-  } catch (error) {
-    console.error('설치 데이터 로드 오류:', error);
-    return null;
+function saveInstallationData(data) {
+  cachedInstallData = {
+    clientKey: data.clientKey,
+    sharedSecret: data.sharedSecret,
+    baseUrl: data.baseUrl,
+    productType: data.productType,
+    installedAt: new Date().toISOString()
+  };
+  
+  console.log('설치 데이터 메모리에 저장 완료:', data.clientKey);
+  return true;
+}
+
+/**
+ * 설치 데이터 불러오기
+ * @returns {Object|null} - 설치 데이터 객체
+ */
+function loadInstallationData() {
+  if (cachedInstallData) {
+    return cachedInstallData;
   }
+  
+  console.warn('저장된 설치 데이터가 없습니다.');
+  return null;
 }
 
 /**
@@ -68,15 +50,25 @@ function generateJWT(method, path, baseUrl, sharedSecret) {
   const iat = now;
   const exp = now + 60 * 10; // 10분 유효기간
   
+  // URI 경로와 쿼리 분리
+  const url = new URL(path.startsWith('http') ? path : `${baseUrl}${path}`);
+  const apiPath = url.pathname;
+  const query = url.search ? url.search.substr(1) : '';
+  
+  // QSH 생성용 요청 객체
+  const request = {
+    method: method,
+    path: apiPath,
+    query: query
+  };
+  
+  console.log('QSH 생성 요청:', request);
+  
   const token = jwt.encode({
     iss: 'com.yourcompany.a4-pdf-export',
     iat,
     exp,
-    qsh: jwt.createQueryStringHash({
-      method,
-      path,
-      baseUrl
-    })
+    qsh: jwt.createQueryStringHash(request)
   }, sharedSecret);
   
   return token;
@@ -91,7 +83,7 @@ function generateJWT(method, path, baseUrl, sharedSecret) {
  */
 async function requestConfluenceApi(method, url, options = {}) {
   // 환경 변수 또는 설치 데이터에서 값 가져오기
-  const installData = await loadInstallationData();
+  const installData = loadInstallationData();
   
   const baseUrl = process.env.CONFLUENCE_BASE_URL || 
                  (installData && installData.baseUrl) || 
@@ -104,12 +96,15 @@ async function requestConfluenceApi(method, url, options = {}) {
   console.log('API 요청:', method, url);
   console.log('Base URL:', baseUrl);
   
-  const token = generateJWT(method, url, baseUrl, sharedSecret);
-  
   try {
+    const token = generateJWT(method, url, baseUrl, sharedSecret);
+    
+    const fullUrl = url.startsWith('http') ? url : `${baseUrl}${url}`;
+    console.log('전체 URL:', fullUrl);
+    
     const response = await axios({
       method,
-      url: `${baseUrl}${url}`,
+      url: fullUrl,
       headers: {
         'Authorization': `JWT ${token}`,
         'Accept': 'application/json',
@@ -132,5 +127,6 @@ async function requestConfluenceApi(method, url, options = {}) {
 module.exports = {
   generateJWT,
   requestConfluenceApi,
-  loadInstallationData
+  loadInstallationData,
+  saveInstallationData
 }; 
