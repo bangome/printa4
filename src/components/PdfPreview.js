@@ -11,6 +11,9 @@ const DPI = 96;
 // mm를 px로 변환 (96 DPI 기준)
 const MM_TO_PX = DPI / 25.4;
 
+// 프리뷰 스케일 (1.2 = 120% 크기로 표시)
+const PREVIEW_SCALE = 1.2;
+
 const PdfPreview = ({ title, content, settings }) => {
   const contentRef = useRef(null);
   const [styleProcessor, setStyleProcessor] = useState(null);
@@ -85,8 +88,8 @@ const previewContainerStyles = css`
 `;
 
 const paperStyles = (settings) => css`
-  width: ${A4_WIDTH_MM * MM_TO_PX}px;
-  height: ${A4_HEIGHT_MM * MM_TO_PX}px;
+  width: ${A4_WIDTH_MM * MM_TO_PX * PREVIEW_SCALE}px;
+  height: ${A4_HEIGHT_MM * MM_TO_PX * PREVIEW_SCALE}px;
   background-color: white;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   position: relative;

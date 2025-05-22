@@ -73,7 +73,7 @@ class PdfGenerator {
       
       // HTML을 캔버스로 변환
       const canvas = await html2canvas(container, {
-        scale: 2, // 고해상도를 위한 스케일 조정
+        scale: 3, // 고해상도를 위한 스케일 조정 (2에서 3으로 증가)
         useCORS: true,
         allowTaint: true,
         scrollY: -window.scrollY
