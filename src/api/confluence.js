@@ -4,8 +4,9 @@
 class ConfluenceApi {
   constructor() {
     this.AP = null;
-    this.maxRetries = 10;
-    this.retryInterval = 500;
+    this.maxRetries = 20;
+    this.retryInterval = 250;
+    this.initPromise = null;
     this.initAP();
   }
 
@@ -13,59 +14,59 @@ class ConfluenceApi {
    * AP 객체 초기화
    */
   initAP() {
-    const tryInit = (retryCount = 0) => {
-      if (typeof AP !== 'undefined' && AP.ready) {
-        console.log('AP 객체 초기화 - AP.ready 사용 가능');
-        this.AP = AP;
-        return;
-      }
+    if (this.initPromise) {
+      return this.initPromise;
+    }
 
-      if (retryCount < this.maxRetries) {
-        console.log(`AP 객체 초기화 재시도 (${retryCount + 1}/${this.maxRetries})`);
-        setTimeout(() => tryInit(retryCount + 1), this.retryInterval);
-      } else {
-        console.error('AP 객체 초기화 실패 - 최대 재시도 횟수 초과');
-      }
-    };
+    this.initPromise = new Promise((resolve, reject) => {
+      const tryInit = (retryCount = 0) => {
+        if (typeof window.AP !== 'undefined' && typeof window.AP.require === 'function') {
+          console.log('AP 객체 초기화 - AP.require 사용 가능');
+          window.AP.require(['request'], () => {
+            console.log('AP 모듈 로드 완료');
+            this.AP = window.AP;
+            resolve(this.AP);
+          });
+          return;
+        }
 
-    // APReady 이벤트 리스너 등록
-    window.addEventListener('APReady', () => {
-      console.log('AP 객체 초기화 - APReady 이벤트 수신');
-      this.AP = window.AP;
+        if (retryCount < this.maxRetries) {
+          console.log(`AP 객체 초기화 재시도 (${retryCount + 1}/${this.maxRetries})`);
+          setTimeout(() => tryInit(retryCount + 1), this.retryInterval);
+        } else {
+          const error = new Error('AP 객체 초기화 실패 - 최대 재시도 횟수 초과');
+          console.error(error);
+          reject(error);
+        }
+      };
+
+      // APReady 이벤트 리스너 등록
+      window.addEventListener('APReady', () => {
+        console.log('AP 객체 초기화 - APReady 이벤트 수신');
+        if (!this.AP && window.AP) {
+          this.AP = window.AP;
+          resolve(this.AP);
+        }
+      });
+
+      // 초기화 시작
+      tryInit();
     });
 
-    // 초기화 시작
-    tryInit();
+    return this.initPromise;
   }
 
   /**
    * AP 객체 가용성 확인 및 대기
    */
   async waitForAP() {
-    const waitForAPReady = () => {
-      return new Promise((resolve, reject) => {
-        if (this.AP) {
-          resolve();
-          return;
-        }
-
-        let retryCount = 0;
-        const checkAP = () => {
-          if (this.AP) {
-            resolve();
-          } else if (retryCount < this.maxRetries) {
-            retryCount++;
-            setTimeout(checkAP, this.retryInterval);
-          } else {
-            reject(new Error('AP 객체 초기화 타임아웃'));
-          }
-        };
-
-        checkAP();
-      });
-    };
-
-    await waitForAPReady();
+    try {
+      await this.initPromise;
+      return this.AP;
+    } catch (error) {
+      console.error('AP 객체 초기화 실패:', error);
+      throw error;
+    }
   }
 
   /**

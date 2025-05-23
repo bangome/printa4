@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script src="https://connect-cdn.atl-paas.net/all.js" type="text/javascript" data-options="resize:false;margin:false"></script>
+  <script src="https://connect-cdn.atl-paas.net/all.js" data-options="sizeToParent:true;margin:false"></script>
   <style>
     body {
       margin: 0;
@@ -23,18 +23,27 @@
   <div id="root"></div>
   <script>
     function initAP() {
-      if (typeof AP !== 'undefined' && AP.ready) {
-        AP.ready(function() {
-          console.log('AP ready - 앱 초기화 시작');
-          window.dispatchEvent(new Event('APReady'));
-        });
+      if (typeof window.AP !== 'undefined') {
+        console.log('AP 객체 발견');
+        if (typeof window.AP.require === 'function') {
+          window.AP.require(['request'], function() {
+            console.log('AP 모듈 로드 완료');
+            window.dispatchEvent(new Event('APReady'));
+          });
+        } else {
+          console.log('AP.require 대기 중...');
+          setTimeout(initAP, 100);
+        }
       } else {
         console.log('AP 객체 대기 중...');
         setTimeout(initAP, 100);
       }
     }
 
-    initAP();
+    window.addEventListener('load', function() {
+      console.log('페이지 로드 완료, AP 초기화 시작');
+      initAP();
+    });
   </script>
 </body>
 </html> 
