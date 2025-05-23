@@ -41,6 +41,17 @@ const App = () => {
   const [settings, setSettings] = useState(defaultSettings);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isAPReady, setIsAPReady] = useState(false);
+
+  // AP 준비 상태 확인
+  useEffect(() => {
+    if (window.AP) {
+      window.AP.ready(() => {
+        console.log('AP ready in App component');
+        setIsAPReady(true);
+      });
+    }
+  }, []);
 
   // URL에서 pageId 파라미터 가져오기
   useEffect(() => {
@@ -49,25 +60,25 @@ const App = () => {
     if (pageIdParam) {
       setPageId(pageIdParam);
     } else {
-      console.log('페이지 ID가 없습니다. 테스트 모드로 실행합니다.');
-      // 테스트 데이터 설정
-      setPageId('test-page-id');
+      setError('페이지 ID가 없습니다.');
+      setLoading(false);
     }
   }, []);
 
   // 페이지 콘텐츠 가져오기
   useEffect(() => {
-    if (!pageId) return;
+    if (!pageId || !isAPReady) return;
 
     const fetchPageContent = async () => {
       try {
         setLoading(true);
+        setError(null);
         console.log('페이지 콘텐츠 가져오기 시작:', pageId);
         
         const pageData = await confluenceApi.getPageContent(pageId);
         const htmlContent = await confluenceApi.getPageHtmlContent(pageId);
         
-        console.log('페이지 데이터 가져오기 성공:', pageData.title);
+        console.log('페이지 데이터 가져오기 성공:', pageData);
         
         setPageTitle(pageData.title);
         setPageContent(htmlContent);
@@ -93,7 +104,7 @@ const App = () => {
     };
 
     fetchPageContent();
-  }, [pageId]);
+  }, [pageId, isAPReady]);
 
   // PDF 생성 메시지 이벤트 리스너
   useEffect(() => {
