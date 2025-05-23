@@ -45,15 +45,6 @@ const App = () => {
 
   // AP 준비 상태 확인
   useEffect(() => {
-    // 이미 AP가 준비된 경우
-    if (window.AP) {
-      window.AP.ready(() => {
-        console.log('AP ready in App component - 직접 호출');
-        setIsAPReady(true);
-      });
-    }
-
-    // APReady 이벤트 리스너 등록
     const handleAPReady = () => {
       console.log('AP ready in App component - 이벤트 수신');
       setIsAPReady(true);
