@@ -8,7 +8,8 @@
   },
   "baseUrl": "https://printa4-7k8m391i2-jinhwa-aegisepcoms-projects.vercel.app",
   "authentication": {
-    "type": "jwt"
+    "type": "jwt",
+    "sharedSecret": "${process.env.CONFLUENCE_JWT_SECRET}"
   },
   "lifecycle": {
     "installed": "/installed"
