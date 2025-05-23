@@ -3,8 +3,24 @@
  */
 class ConfluenceApi {
   constructor() {
-    this.AP = window.AP;
-    console.log('ConfluenceApi 초기화:', { AP: this.AP });
+    this.AP = null;
+    this.initAP();
+  }
+
+  /**
+   * AP 객체 초기화
+   */
+  initAP() {
+    if (window.AP) {
+      console.log('AP 객체 초기화 - window.AP 존재');
+      this.AP = window.AP;
+    } else {
+      console.log('AP 객체 초기화 대기');
+      window.addEventListener('APReady', () => {
+        console.log('AP 객체 초기화 - APReady 이벤트 수신');
+        this.AP = window.AP;
+      });
+    }
   }
 
   /**
@@ -13,8 +29,11 @@ class ConfluenceApi {
   async getContext() {
     console.log('getContext 호출');
     if (!this.AP) {
-      console.error('AP 객체가 없음');
-      throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
+      console.error('AP 객체가 없음 - 재시도');
+      this.initAP();
+      if (!this.AP) {
+        throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
+      }
     }
 
     try {
@@ -34,8 +53,11 @@ class ConfluenceApi {
   async getPageContent(pageId) {
     console.log('getPageContent 호출:', { pageId });
     if (!this.AP) {
-      console.error('AP 객체가 없음');
-      throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
+      console.error('AP 객체가 없음 - 재시도');
+      this.initAP();
+      if (!this.AP) {
+        throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
+      }
     }
 
     try {

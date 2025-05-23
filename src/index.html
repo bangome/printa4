@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-  <script src="https://connect-cdn.atl-paas.net/all.js" async data-options="sizeToParent:true"></script>
+  <script src="https://connect-cdn.atl-paas.net/all.js"></script>
   <style>
     body {
       margin: 0;
@@ -18,20 +18,18 @@
       height: 100vh;
     }
   </style>
-  <script>
-    window.addEventListener('load', function() {
-      if (window.AP) {
-        console.log('Atlassian Connect 스크립트 로드됨');
-        AP.ready(function() {
-          console.log('AP ready 호출됨');
-        });
-      } else {
-        console.error('Atlassian Connect 스크립트 로드 실패');
-      }
-    });
-  </script>
 </head>
 <body>
   <div id="root"></div>
+  <script>
+    if (window.AP) {
+      AP.ready(() => {
+        console.log('AP ready - 앱 초기화 시작');
+        window.dispatchEvent(new Event('APReady'));
+      });
+    } else {
+      console.error('Atlassian Connect 스크립트 로드 실패');
+    }
+  </script>
 </body>
 </html> 

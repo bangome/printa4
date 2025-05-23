@@ -45,29 +45,48 @@ const App = () => {
 
   // AP 준비 상태 확인
   useEffect(() => {
+    // 이미 AP가 준비된 경우
     if (window.AP) {
       window.AP.ready(() => {
-        console.log('AP ready in App component');
+        console.log('AP ready in App component - 직접 호출');
         setIsAPReady(true);
       });
     }
+
+    // APReady 이벤트 리스너 등록
+    const handleAPReady = () => {
+      console.log('AP ready in App component - 이벤트 수신');
+      setIsAPReady(true);
+    };
+
+    window.addEventListener('APReady', handleAPReady);
+    return () => {
+      window.removeEventListener('APReady', handleAPReady);
+    };
   }, []);
 
   // URL에서 pageId 파라미터 가져오기
   useEffect(() => {
+    if (!isAPReady) return;
+
     const params = new URLSearchParams(window.location.search);
     const pageIdParam = params.get('pageId');
     if (pageIdParam) {
+      console.log('페이지 ID 설정:', pageIdParam);
       setPageId(pageIdParam);
     } else {
+      console.error('페이지 ID가 없습니다.');
       setError('페이지 ID가 없습니다.');
       setLoading(false);
     }
-  }, []);
+  }, [isAPReady]);
 
   // 페이지 콘텐츠 가져오기
   useEffect(() => {
-    if (!pageId || !isAPReady) return;
+    if (!pageId || !isAPReady) {
+      console.log('페이지 콘텐츠 가져오기 대기:', { pageId, isAPReady });
+      return;
+    }
 
     const fetchPageContent = async () => {
       try {
