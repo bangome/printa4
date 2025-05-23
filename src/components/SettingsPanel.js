@@ -1,5 +1,6 @@
 import React from 'react';
 import { css } from '@emotion/react';
+import pdfGenerator from '../services/pdfGenerator';
 
 const SettingsPanel = ({ settings, onSettingsChange }) => {
   // 폰트 크기 변경 핸들러
@@ -50,9 +51,18 @@ const SettingsPanel = ({ settings, onSettingsChange }) => {
   };
 
   // PDF 생성 핸들러
-  const handleGeneratePdf = () => {
-    // 이 기능은 PDF 생성 서비스에서 구현
-    window.parent.postMessage({ action: 'generatePdf', settings }, '*');
+  const handleGeneratePdf = async () => {
+    try {
+      // 현재 페이지 제목과 내용 가져오기
+      const title = document.querySelector('h1')?.textContent || 'Confluence 문서';
+      const content = document.querySelector('.pdf-preview-content')?.innerHTML || '';
+      
+      // PDF 생성 서비스 직접 호출
+      await pdfGenerator.generatePdf(title, content, settings);
+    } catch (error) {
+      console.error('PDF 생성 중 오류 발생:', error);
+      alert('PDF 생성에 실패했습니다.');
+    }
   };
 
   return (

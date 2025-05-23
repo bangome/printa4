@@ -64,7 +64,7 @@ const PdfPreview = ({ title, content, settings }) => {
         )}
         
         {/* 콘텐츠 영역 */}
-        <div css={contentAreaStyles(settings)} ref={contentRef}></div>
+        <div css={contentAreaStyles(settings)} className="pdf-preview-content" ref={contentRef}></div>
         
         {/* 푸터 */}
         {settings.footer.show && (

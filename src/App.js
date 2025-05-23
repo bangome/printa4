@@ -4,6 +4,7 @@ import Header from './components/Header';
 import PdfPreview from './components/PdfPreview';
 import SettingsPanel from './components/SettingsPanel';
 import confluenceApi from './api/confluence';
+import pdfGenerator from './services/pdfGenerator';
 
 // 기본 PDF 설정
 const defaultSettings = {
@@ -93,6 +94,27 @@ const App = () => {
 
     fetchPageContent();
   }, [pageId]);
+
+  // PDF 생성 메시지 이벤트 리스너
+  useEffect(() => {
+    const handleMessage = async (event) => {
+      if (event.data && event.data.action === 'generatePdf') {
+        console.log('PDF 생성 요청 수신:', event.data);
+        try {
+          await pdfGenerator.generatePdf(pageTitle, pageContent, settings);
+          console.log('PDF 생성 완료');
+        } catch (error) {
+          console.error('PDF 생성 중 오류 발생:', error);
+          setError('PDF 생성에 실패했습니다.');
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => {
+      window.removeEventListener('message', handleMessage);
+    };
+  }, [pageTitle, pageContent, settings]);
 
   // 설정 변경 핸들러
   const handleSettingsChange = (newSettings) => {
