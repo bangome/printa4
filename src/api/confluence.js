@@ -14,7 +14,12 @@ class ConfluenceApi {
       throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
     }
 
-    return await this.AP.context.getContext();
+    try {
+      return await this.AP.context.getContext();
+    } catch (error) {
+      console.error('컨텍스트 정보를 가져오는데 실패했습니다:', error);
+      throw error;
+    }
   }
 
   /**
@@ -27,9 +32,14 @@ class ConfluenceApi {
     }
 
     try {
+      // 컨텍스트 정보 가져오기
+      const context = await this.getContext();
+      const baseUrl = context.confluence.baseUrl;
+
       const response = await this.AP.request({
-        url: `/wiki/rest/api/content/${pageId}?expand=body.storage,version,title`,
-        type: 'GET'
+        url: `${baseUrl}/rest/api/content/${pageId}?expand=body.storage,version,title`,
+        type: 'GET',
+        contentType: 'application/json'
       });
 
       return JSON.parse(response.body);
@@ -49,9 +59,14 @@ class ConfluenceApi {
     }
 
     try {
+      // 컨텍스트 정보 가져오기
+      const context = await this.getContext();
+      const baseUrl = context.confluence.baseUrl;
+
       const response = await this.AP.request({
-        url: `/wiki/rest/api/content/${pageId}?expand=body.view`,
-        type: 'GET'
+        url: `${baseUrl}/rest/api/content/${pageId}?expand=body.view`,
+        type: 'GET',
+        contentType: 'application/json'
       });
 
       const data = JSON.parse(response.body);
@@ -67,11 +82,25 @@ class ConfluenceApi {
    * @param {string} pageId - 페이지 ID
    */
   async getPageAttachments(pageId) {
-    const response = await fetch(`${this.baseUrl}/page/${pageId}/attachments`);
-    if (!response.ok) {
-      throw new Error('페이지 첨부 파일을 가져오는데 실패했습니다.');
+    if (!this.AP) {
+      throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
     }
-    return response.json();
+
+    try {
+      const context = await this.getContext();
+      const baseUrl = context.confluence.baseUrl;
+
+      const response = await this.AP.request({
+        url: `${baseUrl}/rest/api/content/${pageId}/child/attachment`,
+        type: 'GET',
+        contentType: 'application/json'
+      });
+
+      return JSON.parse(response.body);
+    } catch (error) {
+      console.error('페이지 첨부 파일을 가져오는데 실패했습니다:', error);
+      throw error;
+    }
   }
 }
 
