@@ -20,13 +20,16 @@ class ConfluenceApi {
 
     this.initPromise = new Promise((resolve, reject) => {
       const tryInit = (retryCount = 0) => {
-        if (typeof window.AP !== 'undefined' && typeof window.AP.require === 'function') {
-          console.log('AP 객체 초기화 - AP.require 사용 가능');
-          window.AP.require(['request'], () => {
-            console.log('AP 모듈 로드 완료');
+        if (typeof window.AP !== 'undefined' && typeof window.AP.flag !== 'undefined' && typeof window.AP.flag.isRendered === 'function') {
+          console.log('AP 객체 초기화 - AP.flag.isRendered 사용 가능');
+          if (window.AP.flag.isRendered()) {
+            console.log('AP 초기화 완료');
             this.AP = window.AP;
             resolve(this.AP);
-          });
+          } else {
+            console.log('AP 렌더링 대기 중...');
+            setTimeout(() => tryInit(retryCount), this.retryInterval);
+          }
           return;
         }
 
