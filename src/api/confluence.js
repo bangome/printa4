@@ -4,6 +4,8 @@
 class ConfluenceApi {
   constructor() {
     this.AP = null;
+    this.maxRetries = 10;
+    this.retryInterval = 500;
     this.initAP();
   }
 
@@ -11,16 +13,59 @@ class ConfluenceApi {
    * AP 객체 초기화
    */
   initAP() {
-    if (window.AP) {
-      console.log('AP 객체 초기화 - window.AP 존재');
+    const tryInit = (retryCount = 0) => {
+      if (typeof AP !== 'undefined' && AP.ready) {
+        console.log('AP 객체 초기화 - AP.ready 사용 가능');
+        this.AP = AP;
+        return;
+      }
+
+      if (retryCount < this.maxRetries) {
+        console.log(`AP 객체 초기화 재시도 (${retryCount + 1}/${this.maxRetries})`);
+        setTimeout(() => tryInit(retryCount + 1), this.retryInterval);
+      } else {
+        console.error('AP 객체 초기화 실패 - 최대 재시도 횟수 초과');
+      }
+    };
+
+    // APReady 이벤트 리스너 등록
+    window.addEventListener('APReady', () => {
+      console.log('AP 객체 초기화 - APReady 이벤트 수신');
       this.AP = window.AP;
-    } else {
-      console.log('AP 객체 초기화 대기');
-      window.addEventListener('APReady', () => {
-        console.log('AP 객체 초기화 - APReady 이벤트 수신');
-        this.AP = window.AP;
+    });
+
+    // 초기화 시작
+    tryInit();
+  }
+
+  /**
+   * AP 객체 가용성 확인 및 대기
+   */
+  async waitForAP() {
+    const waitForAPReady = () => {
+      return new Promise((resolve, reject) => {
+        if (this.AP) {
+          resolve();
+          return;
+        }
+
+        let retryCount = 0;
+        const checkAP = () => {
+          if (this.AP) {
+            resolve();
+          } else if (retryCount < this.maxRetries) {
+            retryCount++;
+            setTimeout(checkAP, this.retryInterval);
+          } else {
+            reject(new Error('AP 객체 초기화 타임아웃'));
+          }
+        };
+
+        checkAP();
       });
-    }
+    };
+
+    await waitForAPReady();
   }
 
   /**
@@ -28,13 +73,7 @@ class ConfluenceApi {
    */
   async getContext() {
     console.log('getContext 호출');
-    if (!this.AP) {
-      console.error('AP 객체가 없음 - 재시도');
-      this.initAP();
-      if (!this.AP) {
-        throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
-      }
-    }
+    await this.waitForAP();
 
     try {
       const context = await this.AP.context.getContext();
@@ -52,13 +91,7 @@ class ConfluenceApi {
    */
   async getPageContent(pageId) {
     console.log('getPageContent 호출:', { pageId });
-    if (!this.AP) {
-      console.error('AP 객체가 없음 - 재시도');
-      this.initAP();
-      if (!this.AP) {
-        throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
-      }
-    }
+    await this.waitForAP();
 
     try {
       // 컨텍스트 정보 가져오기
@@ -86,10 +119,7 @@ class ConfluenceApi {
    */
   async getPageHtmlContent(pageId) {
     console.log('getPageHtmlContent 호출:', { pageId });
-    if (!this.AP) {
-      console.error('AP 객체가 없음');
-      throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
-    }
+    await this.waitForAP();
 
     try {
       // 컨텍스트 정보 가져오기
@@ -117,9 +147,7 @@ class ConfluenceApi {
    * @param {string} pageId - 페이지 ID
    */
   async getPageAttachments(pageId) {
-    if (!this.AP) {
-      throw new Error('Atlassian Connect API가 로드되지 않았습니다.');
-    }
+    await this.waitForAP();
 
     try {
       const context = await this.getContext();
