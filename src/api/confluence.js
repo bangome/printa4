@@ -98,10 +98,11 @@ class ConfluenceApi {
     await this.waitForAP();
 
     try {
+      const context = await this.getContext();
       console.log('API 요청 URL 구성:', { baseUrl: this.baseUrl, pageId });
 
       const response = await this.AP.request({
-        url: `/rest/api/content/${pageId}?expand=body.storage,version,title`,
+        url: `${context.confluence.baseUrl}/wiki/rest/api/content/${pageId}?expand=body.storage,version,title`,
         type: 'GET',
         contentType: 'application/json'
       });
@@ -123,10 +124,11 @@ class ConfluenceApi {
     await this.waitForAP();
 
     try {
+      const context = await this.getContext();
       console.log('API 요청 URL 구성:', { baseUrl: this.baseUrl, pageId });
 
       const response = await this.AP.request({
-        url: `/rest/api/content/${pageId}?expand=body.view`,
+        url: `${context.confluence.baseUrl}/wiki/rest/api/content/${pageId}?expand=body.view`,
         type: 'GET',
         contentType: 'application/json'
       });
@@ -148,10 +150,11 @@ class ConfluenceApi {
     await this.waitForAP();
 
     try {
+      const context = await this.getContext();
       console.log('API 요청 URL 구성:', { baseUrl: this.baseUrl, pageId });
 
       const response = await this.AP.request({
-        url: `/rest/api/content/${pageId}/child/attachment`,
+        url: `${context.confluence.baseUrl}/wiki/rest/api/content/${pageId}/child/attachment`,
         type: 'GET',
         contentType: 'application/json'
       });
