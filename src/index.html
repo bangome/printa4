@@ -25,18 +25,10 @@
     function initAP() {
       if (typeof window.AP !== 'undefined') {
         console.log('AP 객체 발견');
-        if (typeof window.AP.flag !== 'undefined' && typeof window.AP.flag.isRendered === 'function') {
-          if (window.AP.flag.isRendered()) {
-            console.log('AP 초기화 완료');
-            window.dispatchEvent(new Event('APReady'));
-          } else {
-            console.log('AP 렌더링 대기 중...');
-            setTimeout(initAP, 100);
-          }
-        } else {
-          console.log('AP.flag 대기 중...');
-          setTimeout(initAP, 100);
-        }
+        window.AP.context.getContext(function(context) {
+          console.log('AP 컨텍스트 로드 완료:', context);
+          window.dispatchEvent(new Event('APReady'));
+        });
       } else {
         console.log('AP 객체 대기 중...');
         setTimeout(initAP, 100);
