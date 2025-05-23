@@ -7,6 +7,7 @@ class ConfluenceApi {
     this.maxRetries = 20;
     this.retryInterval = 250;
     this.initPromise = null;
+    this.baseUrl = null;
     this.initAP();
   }
 
@@ -25,6 +26,7 @@ class ConfluenceApi {
           window.AP.context.getContext((context) => {
             console.log('AP 초기화 완료 - 컨텍스트:', context);
             this.AP = window.AP;
+            this.baseUrl = context.confluence ? context.confluence.baseUrl : context.url.displayUrl;
             resolve(this.AP);
           });
           return;
@@ -44,8 +46,11 @@ class ConfluenceApi {
       window.addEventListener('APReady', () => {
         console.log('AP 객체 초기화 - APReady 이벤트 수신');
         if (!this.AP && window.AP) {
-          this.AP = window.AP;
-          resolve(this.AP);
+          window.AP.context.getContext((context) => {
+            this.AP = window.AP;
+            this.baseUrl = context.confluence ? context.confluence.baseUrl : context.url.displayUrl;
+            resolve(this.AP);
+          });
         }
       });
 
@@ -76,14 +81,12 @@ class ConfluenceApi {
     console.log('getContext 호출');
     await this.waitForAP();
 
-    try {
-      const context = await this.AP.context.getContext();
-      console.log('컨텍스트 정보:', context);
-      return context;
-    } catch (error) {
-      console.error('컨텍스트 정보를 가져오는데 실패했습니다:', error);
-      throw error;
-    }
+    return new Promise((resolve, reject) => {
+      this.AP.context.getContext((context) => {
+        console.log('컨텍스트 정보:', context);
+        resolve(context);
+      });
+    });
   }
 
   /**
@@ -95,13 +98,10 @@ class ConfluenceApi {
     await this.waitForAP();
 
     try {
-      // 컨텍스트 정보 가져오기
-      const context = await this.getContext();
-      const baseUrl = context.confluence.baseUrl;
-      console.log('API 요청 URL 구성:', { baseUrl, pageId });
+      console.log('API 요청 URL 구성:', { baseUrl: this.baseUrl, pageId });
 
       const response = await this.AP.request({
-        url: `${baseUrl}/rest/api/content/${pageId}?expand=body.storage,version,title`,
+        url: `/rest/api/content/${pageId}?expand=body.storage,version,title`,
         type: 'GET',
         contentType: 'application/json'
       });
@@ -123,13 +123,10 @@ class ConfluenceApi {
     await this.waitForAP();
 
     try {
-      // 컨텍스트 정보 가져오기
-      const context = await this.getContext();
-      const baseUrl = context.confluence.baseUrl;
-      console.log('API 요청 URL 구성:', { baseUrl, pageId });
+      console.log('API 요청 URL 구성:', { baseUrl: this.baseUrl, pageId });
 
       const response = await this.AP.request({
-        url: `${baseUrl}/rest/api/content/${pageId}?expand=body.view`,
+        url: `/rest/api/content/${pageId}?expand=body.view`,
         type: 'GET',
         contentType: 'application/json'
       });
@@ -151,11 +148,10 @@ class ConfluenceApi {
     await this.waitForAP();
 
     try {
-      const context = await this.getContext();
-      const baseUrl = context.confluence.baseUrl;
+      console.log('API 요청 URL 구성:', { baseUrl: this.baseUrl, pageId });
 
       const response = await this.AP.request({
-        url: `${baseUrl}/rest/api/content/${pageId}/child/attachment`,
+        url: `/rest/api/content/${pageId}/child/attachment`,
         type: 'GET',
         contentType: 'application/json'
       });
