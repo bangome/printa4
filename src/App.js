@@ -48,7 +48,9 @@ const App = () => {
     if (pageIdParam) {
       setPageId(pageIdParam);
     } else {
-      setError('페이지 ID가 제공되지 않았습니다.');
+      console.log('페이지 ID가 없습니다. 테스트 모드로 실행합니다.');
+      // 테스트 데이터 설정
+      setPageId('test-page-id');
     }
   }, []);
 
@@ -59,8 +61,12 @@ const App = () => {
     const fetchPageContent = async () => {
       try {
         setLoading(true);
+        console.log('페이지 콘텐츠 가져오기 시작:', pageId);
+        
         const pageData = await confluenceApi.getPageContent(pageId);
         const htmlContent = await confluenceApi.getPageHtmlContent(pageId);
+        
+        console.log('페이지 데이터 가져오기 성공:', pageData.title);
         
         setPageTitle(pageData.title);
         setPageContent(htmlContent);
@@ -135,7 +141,8 @@ const App = () => {
 const appStyles = css`
   display: flex;
   flex-direction: column;
-  height: 100vh;
+  min-height: 100vh;
+  max-height: 100vh;
   font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
 `;
 
@@ -143,6 +150,7 @@ const contentStyles = css`
   display: flex;
   flex: 1;
   overflow: hidden;
+  height: calc(100vh - 60px);
 `;
 
 const previewContainerStyles = css`
@@ -153,10 +161,11 @@ const previewContainerStyles = css`
 `;
 
 const settingsPanelStyles = css`
-  width: 300px;
+  width: 320px;
   background-color: #ffffff;
   border-left: 1px solid #dfe1e6;
   overflow-y: auto;
+  padding: 0 10px;
 `;
 
 const loadingStyles = css`

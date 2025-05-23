@@ -11,8 +11,8 @@ const DPI = 96;
 // mm를 px로 변환 (96 DPI 기준)
 const MM_TO_PX = DPI / 25.4;
 
-// 프리뷰 스케일 (1.2 = 120% 크기로 표시)
-const PREVIEW_SCALE = 1.2;
+// 프리뷰 스케일 (1.5 = 150% 크기로 표시)
+const PREVIEW_SCALE = 1.5;
 
 const PdfPreview = ({ title, content, settings }) => {
   const contentRef = useRef(null);
